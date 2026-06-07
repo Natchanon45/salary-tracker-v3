@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#16a34a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Salary">
+  <title>Salary Tracker</title>
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+  <div class="app">
+    <div id="loadingScreen" class="loading-screen">
+      <div class="logo-bubble">
+        <i class="bi bi-cash-stack"></i>
+      </div>
+      <h1>Salary Tracker</h1>
+      <p>กำลังโหลดข้อมูล...</p>
+    </div>
+
+    <header class="app-header">
+      <div class="header-main">
+        <div class="brand-logo">
+          <i class="bi bi-cash-stack"></i>
+        </div>
+        <div class="brand-text">
+          <h1>Salary Tracker</h1>
+          <p>ระบบคำนวณเงินเดือนค้างจ่าย</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="themeBtn" class="circle-btn" type="button" aria-label="เปลี่ยนธีม">
+          <i id="themeIcon" class="bi bi-circle-half"></i>
+        </button>
+      </div>
+    </header>
+
+    <main class="page">
+      <section id="page-home" class="page-panel active">
+        <section class="hero-card">
+          <div class="hero-title">
+            <span>ยอดค้างจ่ายทั้งหมด</span>
+            <i class="bi bi-wallet2"></i>
+          </div>
+          <div id="totalOutstanding" class="hero-amount">0.00</div>
+          <div class="hero-subtitle">ระบบตัดยอดแบบ FIFO จากเดือนเก่าสุดก่อน</div>
+
+          <div class="limit-grid">
+            <div class="limit-card">
+              <span>เงินเดือน</span>
+              <strong id="salaryDisplay">0.00</strong>
+              <small>บาท</small>
+            </div>
+            <div class="limit-card">
+              <span>สุทธิ/เดือน</span>
+              <strong id="netSalary">0.00</strong>
+              <small>บาท</small>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <div class="section-head">
+            <h2>รายละเอียดยอดหัก</h2>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-box">
+              <span>ประกันสังคม</span>
+              <strong id="ssDisplay">0.00</strong>
+            </div>
+            <div class="stat-box">
+              <span>ภาษี ณ ที่จ่าย</span>
+              <strong id="taxDisplay">0.00</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <div class="section-head">
+            <h2>ตั้งค่าเงินเดือน</h2>
+          </div>
+
+          <label class="field-label">เงินเดือนจริง</label>
+          <input id="salary" class="app-input number-input" inputmode="decimal" placeholder="เช่น 30000">
+
+          <label class="field-label">ประกันสังคม (%)</label>
+          <input id="ssRate" class="app-input number-input" inputmode="decimal" placeholder="เช่น 5">
+
+          <label class="field-label">รูปแบบภาษีหัก ณ ที่จ่าย</label>
+          <select id="taxMode" class="app-input">
+            <option value="percent">คิดเป็นเปอร์เซ็นต์ (%)</option>
+            <option value="fixed">กำหนดเป็นจำนวนเงิน</option>
+          </select>
+
+          <label class="field-label">ภาษีหัก ณ ที่จ่าย</label>
+          <input id="taxValue" class="app-input number-input" inputmode="decimal" placeholder="เช่น 5 หรือ 1500">
+
+          <button id="saveSettings" class="primary-btn">
+            <i class="bi bi-check2-circle"></i>
+            บันทึก
+          </button>
+        </section>
+      </section>
+
+      <section id="page-debts" class="page-panel">
+        <section class="section-card">
+          <div class="section-head">
+            <h2>เพิ่มเดือนค้าง</h2>
+            <span class="chip">ห้ามเพิ่มซ้ำ</span>
+          </div>
+          <label class="field-label">เดือนที่บริษัทค้างจ่าย</label>
+          <input type="month" id="debtMonth" class="app-input date-input">
+          <button id="addDebt" class="primary-btn">
+            <i class="bi bi-plus-circle"></i>
+            เพิ่มเดือนค้าง
+          </button>
+        </section>
+
+        <section class="section-card">
+          <div class="section-head">
+            <h2>ยอดค้างรายเดือน</h2>
+            <span class="muted-small">เก่าสุดก่อน</span>
+          </div>
+          <div id="debts" class="list-stack"></div>
+        </section>
+      </section>
+
+      <section id="page-payments" class="page-panel">
+        <section class="section-card">
+          <div class="section-head">
+            <h2>บันทึกการจ่าย</h2>
+          </div>
+
+          <label class="field-label">วันที่บริษัทจ่าย</label>
+          <input type="date" id="payDate" class="app-input date-input">
+
+          <label class="field-label">จำนวนเงินที่บริษัทจ่าย</label>
+          <input id="payAmount" class="app-input number-input" inputmode="decimal" placeholder="เช่น 5000">
+
+          <button id="addPayment" class="primary-btn">
+            <i class="bi bi-send-check"></i>
+            บันทึก
+          </button>
+        </section>
+
+        <section class="section-card">
+          <div class="section-head">
+            <h2>ประวัติการจ่าย</h2>
+            <button id="clearPayments" class="text-danger-btn" type="button">ล้างทั้งหมด</button>
+          </div>
+          <div id="payments" class="list-stack"></div>
+        </section>
+      </section>
+
+      <section id="page-summary" class="page-panel">
+        <section class="section-card">
+          <div class="section-head">
+            <h2>สรุปข้อมูล</h2>
+          </div>
+          <div class="summary-table">
+            <div><span>จำนวนเดือนค้าง</span><strong id="debtCount">0</strong></div>
+            <div><span>จำนวนรายการจ่าย</span><strong id="paymentCount">0</strong></div>
+            <div><span>ยอดตั้งต้นทั้งหมด</span><strong id="originalTotal">0.00</strong></div>
+            <div><span>ยอดที่จ่ายแล้ว</span><strong id="paidTotal">0.00</strong></div>
+            <div><span>ยอดค้างรวม</span><strong id="summaryOutstanding">0.00</strong></div>
+          </div>
+        </section>
+
+        <section class="section-card">
+          <div class="section-head">
+            <h2>สำรองข้อมูล</h2>
+          </div>
+          <button id="exportBtn" class="secondary-btn">
+            <i class="bi bi-download"></i>
+            Export Backup JSON
+          </button>
+          <label class="file-btn">
+            <i class="bi bi-upload"></i>
+            Import Backup JSON
+            <input type="file" id="importFile" accept="application/json">
+          </label>
+        </section>
+
+        <section class="section-card">
+          <div class="section-head">
+            <h2>แอพและเวอร์ชัน</h2>
+          </div>
+          <button id="installBtn" class="secondary-btn hidden">
+            <i class="bi bi-phone"></i>
+            ติดตั้งแอพ
+          </button>
+          <button id="updateBtn" class="secondary-btn hidden">
+            <i class="bi bi-arrow-clockwise"></i>
+            อัปเดตแอพ
+          </button>
+          <div class="version-text">Version 3.0 - พัฒนาโดย นายณัฐชนน ศรีเปล่ง</div>
+        </section>
+      </section>
+    </main>
+
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-page="home">
+        <i class="bi bi-house-fill"></i>
+        <span>หน้าแรก</span>
+      </button>
+      <button class="nav-btn" data-page="debts">
+        <i class="bi bi-calendar2-month"></i>
+        <span>เดือนค้าง</span>
+      </button>
+      <button class="nav-btn" data-page="payments">
+        <i class="bi bi-cash-coin"></i>
+        <span>การจ่าย</span>
+      </button>
+      <button class="nav-btn" data-page="summary">
+        <i class="bi bi-bar-chart-fill"></i>
+        <span>สรุป</span>
+      </button>
+    </nav>
+
+    <div id="updateBar" class="update-bar hidden">
+      <span><i class="bi bi-cloud-arrow-down"></i> มีเวอร์ชันใหม่พร้อมใช้งาน</span>
+      <button id="updateBarBtn" type="button">อัปเดต</button>
+    </div>
+
+    <div id="toast" class="toast">
+      <i id="toastIcon" class="bi bi-check-circle-fill"></i>
+      <span id="toastText">สำเร็จ</span>
+    </div>
+  </div>
+
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
